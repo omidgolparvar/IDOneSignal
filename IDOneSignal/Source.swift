@@ -20,17 +20,13 @@ public class IDOneSignal {
 	
 	private static var BaseURL		: String		= ""
 	private static var AppID		: String		= ""
-	private static var IsVerbose	: Bool			= false
-	private static var Routes		: RoutesType	= (
-		addDevice	: "onesignal/adddevice",
-		editDevice	: "onesignal/editdevice"
-	)
+	private static var Routes		: RoutesType	= ("", "")
 	
-	public static var IsConfigured	: Bool		= false
-	public static var IsSubscribed	: Bool		= false
-	public static var PlayerID		: String?	= nil
+	public static var IsConfigured	: Bool			= false
+	public static var IsSubscribed	: Bool			= false
+	public static var PlayerID		: String?		= nil
 	
-	public static func Setup(baseURL: String, appID: String, routes: RoutesType? = nil, isVerbose: Bool = false) throws {
+	public static func Setup(baseURL: String, appID: String, routes: RoutesType = ("onesignal/adddevice", "onesignal/editdevice")) {
 		var errors: [IDOneSignalConfigureError] = []
 		
 		if baseURL.isTrimmedAndEmpty {
@@ -39,27 +35,25 @@ public class IDOneSignal {
 		if appID.isTrimmedAndEmpty {
 			errors.append(.missingAppID)
 		}
-		if let routes = routes, (routes.addDevice.isTrimmedAndEmpty || routes.editDevice.isTrimmedAndEmpty) {
+		if (routes.addDevice.isTrimmedAndEmpty || routes.editDevice.isTrimmedAndEmpty) {
 			errors.append(.routesMissing)
 		}
 		
 		guard errors.isEmpty else {
-			let multipleErrors = IDOneSignalConfigureError.multiple(errors)
-			if isVerbose { print(multipleErrors.description) }
-			throw multipleErrors
+			print(IDOneSignalConfigureError.multiple(errors).description)
+			return
 		}
 		
-		BaseURL = baseURL
-		AppID = appID
-		if let routes = routes { Routes = routes }
-		IsVerbose = isVerbose
-		IsConfigured = true
+		BaseURL			= baseURL
+		AppID			= appID
+		Routes			= routes
+		IsConfigured	= true
 	}
 	
 	public static func Perform(action: IDOneSignalAction, then callback: @escaping (IDOneSignalActionError?, Any?) -> Void) {
 		guard IsConfigured else {
 			let error = IDOneSignalActionError.isNotConfigured
-			if IsVerbose { print(error.description) }
+			print(error.description)
 			callback(error, nil)
 			return
 		}
@@ -68,7 +62,7 @@ public class IDOneSignal {
 			try action.validateBeforePerform()
 		} catch {
 			let e = error as! IDOneSignalActionError
-			if IsVerbose { print(e.description) }
+			print(e.description)
 			callback(e, nil)
 			return
 		}
@@ -83,12 +77,6 @@ public class IDOneSignal {
 				switch response.result {
 				case .success(let data):
 					let jsonObject = JSON(data)
-					
-					if IDOneSignal.IsVerbose {
-						print("🆔 - Server Response:")
-						print(jsonObject)
-						print()
-					}
 					
 					if	let httpStatusCode = response.response?.statusCode, httpStatusCode == 200,
 						let statusValue = jsonObject["status"].int, statusValue == 1 {
@@ -108,11 +96,9 @@ public class IDOneSignal {
 					}
 					
 				case .failure(let error):
-					if IDOneSignal.IsVerbose {
-						print("🆔 ⚠️ - Alamofire Request Failed: ")
-						print(error.localizedDescription)
-						print()
-					}
+					print("🆔 ⚠️ - Alamofire request failed: ")
+					print(error.localizedDescription)
+					print()
 					
 					callback(.custom(message: error.localizedDescription), nil)
 				}
@@ -132,12 +118,12 @@ public class IDOneSignal {
 		public var description: String {
 			let _0 = "🆔 ⚠️ - Configuration Error: "
 			switch self {
-			case .multiple(let errors)	: return _0 + "\n" + errors.map({ $0.description.replacingOccurrences(of: _0, with: "    - ") }).joined(separator: "\n") + "\n"
-			case .missingBaseURL		: return _0 + "BaseURL Is Missing." + "\n"
-			case .missingAppID			: return _0 + "AppID Is Missing." + "\n"
-			case .requestFailed			: return _0 + "Request Failed." + "\n"
-			case .routesMissing			: return _0 + "Route(s) Is(Are) Empty." + "\n"
-			case .missingPlayerID		: return _0 + "PlayerID Is Missing." + "\n"
+			case .multiple(let errors)	: return _0 + "\n" + errors.map({ $0.description.replacingOccurrences(of: _0, with: " - ") }).joined(separator: "") + "\n"
+			case .missingBaseURL		: return _0 + "BaseURL is missing." + "\n"
+			case .missingAppID			: return _0 + "AppID is missing." + "\n"
+			case .requestFailed			: return _0 + "Request failed." + "\n"
+			case .routesMissing			: return _0 + "Route(s) is(are) empty." + "\n"
+			case .missingPlayerID		: return _0 + "PlayerID is missing." + "\n"
 			}
 		}
 		
@@ -205,11 +191,11 @@ public class IDOneSignal {
 		public var description: String {
 			let _0 = "🆔 ⚠️ - Action Error: "
 			switch self {
-			case .missingDeviceToken	: return _0 + "APNs Token Is Empty" + "\n"
-			case .missingPlayerID		: return _0 + "PlayerID Is Missing" + "\n"
-			case .isNotConfigured		: return _0 + "Framework Is NOT Configured. Call IDOneSignal.Setup(...)." + "\n"
-			case .invalidResponse		: return _0 + "Server Response Is NOT Valid." + "\n"
-			case .custom(let message)	: return _0 + "Custom Error Message -> \(message)" + "\n"
+			case .missingDeviceToken	: return _0 + "APNs token is empty." + "\n"
+			case .missingPlayerID		: return _0 + "PlayerID is missing." + "\n"
+			case .isNotConfigured		: return _0 + "Framework is NOT configured. Call IDOneSignal.Setup(...)." + "\n"
+			case .invalidResponse		: return _0 + "Server response is NOT valid." + "\n"
+			case .custom(let message)	: return _0 + "Custom error message: \(message)." + "\n"
 			}
 		}
 	}
