@@ -5,6 +5,7 @@ target 'IDOneSignal' do
 
   pod 'Alamofire'
   pod 'SwiftyJSON'
+  pod 'UIDeviceComplete'
 
   target 'IDOneSignalTests' do
     inherit! :search_paths
