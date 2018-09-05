@@ -4,7 +4,7 @@ Pod::Spec.new do |s|
   s.summary               = 'IDOneSignal - InfinityDesign OneSignal helper framework for iOS.'
   s.description           = <<-DESC
                             Written in Swift.
-                            IDOneSignal Framework.
+                            IDOneSignal - InfinityDesign OneSignal helper Framework.
                             DESC
   s.homepage              = 'https://github.com/omidgolparvar/IDOneSignal'
   s.license               = { :type => 'MIT', :file => 'LICENSE.md' }
