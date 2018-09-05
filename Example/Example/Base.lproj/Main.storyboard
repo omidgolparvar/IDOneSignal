@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="UtA-vT-rh1">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Table View Controller-->
+        <scene sceneID="0nr-OK-DeF">
+            <objects>
+                <tableViewController id="UtA-vT-rh1" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="static" style="grouped" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="18" sectionFooterHeight="18" id="Rmx-np-Qc8">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                        <sections>
+                            <tableViewSection headerTitle="🔶 Configuration" footerTitle="Call IDOneSignal.Setup to configure IDOneSignal and set required informations." id="vyI-bH-cZf">
+                                <cells/>
+                            </tableViewSection>
+                            <tableViewSection headerTitle="📱 Add Device" id="d3Z-64-cmN">
+                                <cells/>
+                            </tableViewSection>
+                            <tableViewSection headerTitle="🆗 Subscribe Device" id="qbU-nC-uId">
+                                <cells/>
+                            </tableViewSection>
+                            <tableViewSection headerTitle="🚫 Unsubscribe Device" id="P9f-ZE-LzZ">
+                                <cells/>
+                            </tableViewSection>
+                        </sections>
+                        <connections>
+                            <outlet property="dataSource" destination="UtA-vT-rh1" id="Y52-7l-HjA"/>
+                            <outlet property="delegate" destination="UtA-vT-rh1" id="vid-Q0-DA8"/>
+                        </connections>
+                    </tableView>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="mbl-H4-xXZ" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-265" y="179"/>
+        </scene>
+    </scenes>
+</document>
