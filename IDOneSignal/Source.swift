@@ -21,9 +21,8 @@ public class IDOneSignal {
 	private static var BaseURL		: String		= ""
 	private static var AppID		: String		= ""
 	private static var Routes		: RoutesType	= ("", "")
+	private static var IsConfigured	: Bool			= false
 	
-	public static var IsConfigured	: Bool			= false
-	public static var IsSubscribed	: Bool			= false
 	public static var PlayerID		: String?		= nil
 	
 	public static func Setup(baseURL: String, appID: String, routes: RoutesType = ("onesignal/adddevice", "onesignal/editdevice")) {
@@ -106,7 +105,7 @@ public class IDOneSignal {
 		
 	}
 	
-	public enum IDOneSignalConfigureError: Error, CustomStringConvertible {
+	private enum IDOneSignalConfigureError: Error, CustomStringConvertible {
 		case multiple([IDOneSignalConfigureError])
 		
 		case missingBaseURL
@@ -115,7 +114,7 @@ public class IDOneSignal {
 		case routesMissing
 		case missingPlayerID
 		
-		public var description: String {
+		var description: String {
 			let _0 = "🆔 ⚠️ - Configuration Error: "
 			switch self {
 			case .multiple(let errors)	: return _0 + "\n" + errors.map({ $0.description.replacingOccurrences(of: _0, with: " - ") }).joined(separator: "") + "\n"
