@@ -20,16 +20,20 @@ public class IDOneSignal {
 	
 	private static var BaseURL		: String		= ""
 	private static var AppID		: String		= ""
+	private static var ProjectID	: String		= ""
 	private static var Routes		: RoutesType	= ("", "")
 	private static var IsConfigured	: Bool			= false
 	
 	public static var PlayerID		: String?		= nil
 	
-	public static func Setup(baseURL: String, appID: String, routes: RoutesType = ("onesignal/adddevice", "onesignal/editdevice")) {
+	public static func Setup(baseURL: String, appID: String, projectID: String, routes: RoutesType = ("user/add-device", "user/edit-device")) {
 		var errors: [IDOneSignalConfigureError] = []
 		
 		if baseURL.isTrimmedAndEmpty {
 			errors.append(.missingBaseURL)
+		}
+		if projectID.isTrimmedAndEmpty {
+			errors.append(.missingProjectID)
 		}
 		if appID.isTrimmedAndEmpty {
 			errors.append(.missingAppID)
@@ -44,6 +48,7 @@ public class IDOneSignal {
 		}
 		
 		BaseURL			= baseURL
+		ProjectID		= projectID
 		AppID			= appID
 		Routes			= routes
 		IsConfigured	= true
@@ -110,6 +115,7 @@ public class IDOneSignal {
 		
 		case missingBaseURL
 		case missingAppID
+		case missingProjectID
 		case requestFailed
 		case routesMissing
 		case missingPlayerID
@@ -120,6 +126,7 @@ public class IDOneSignal {
 			case .multiple(let errors)	: return _0 + "\n" + errors.map({ $0.description.replacingOccurrences(of: _0, with: " - ") }).joined(separator: "") + "\n"
 			case .missingBaseURL		: return _0 + "BaseURL is missing." + "\n"
 			case .missingAppID			: return _0 + "AppID is missing." + "\n"
+			case .missingProjectID		: return _0 + "ProjectID is missing." + "\n"
 			case .requestFailed			: return _0 + "Request failed." + "\n"
 			case .routesMissing			: return _0 + "Route(s) is(are) empty." + "\n"
 			case .missingPlayerID		: return _0 + "PlayerID is missing." + "\n"
@@ -129,23 +136,25 @@ public class IDOneSignal {
 	}
 	
 	public enum IDOneSignalAction {
-		case addDevice(token: String)
+		case addDevice(token: String, isForTest: Bool)
 		case subscribe
 		case unsubscribe
 		case setTags(tags: [String: Any])
 		
-		func getParameters() -> [String: Any] {
+		fileprivate func getParameters() -> [String: Any] {
 			var parameter: [String: Any] = [:]
-			parameter["app_id"]			= AppID
+			parameter["project_id"]		= IDOneSignal.ProjectID
+			parameter["app_id"]			= IDOneSignal.AppID
 			parameter["device_type"]	= 0
 			parameter["game_version"]	= Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String
 			parameter["device_model"]	= UIDevice.current.dc.deviceModel
 			parameter["device_os"]		= UIDevice.current.systemVersion
 			
 			switch self {
-			case .addDevice(let token):
+			case .addDevice(let token, let isForTest):
 				parameter["identifier"]			= token
 				parameter["notification_types"]	= 1
+				parameter["test_type"]			= isForTest ? 1 : 2
 			case .subscribe:
 				parameter["player_id"]			= IDOneSignal.PlayerID ?? ""
 				parameter["notification_types"]	= 1
@@ -161,21 +170,21 @@ public class IDOneSignal {
 			return parameter
 		}
 		
-		func getURL() -> URL {
+		fileprivate func getURL() -> URL {
 			switch self {
-			case .addDevice(_)	: return URL(string: IDOneSignal.Routes.addDevice)!
+			case .addDevice(_, _)	: return URL(string: IDOneSignal.Routes.addDevice)!
 			case .subscribe,
 				 .unsubscribe,
-				 .setTags(_)	: return URL(string: IDOneSignal.Routes.editDevice)!
+				 .setTags(_)		: return URL(string: IDOneSignal.Routes.editDevice)!
 			}
 		}
 		
-		func validateBeforePerform() throws {
+		fileprivate func validateBeforePerform() throws {
 			switch self {
-			case .addDevice(let token)	: guard !token.isTrimmedAndEmpty else { throw IDOneSignalActionError.missingDeviceToken }
+			case .addDevice(let token, _)	: guard !token.isTrimmedAndEmpty else { throw IDOneSignalActionError.missingDeviceToken }
 			case .subscribe,
 				 .unsubscribe,
-				 .setTags(_)			: guard IDOneSignal.PlayerID != nil else { throw IDOneSignalActionError.missingPlayerID }
+				 .setTags(_)				: guard IDOneSignal.PlayerID != nil else { throw IDOneSignalActionError.missingPlayerID }
 			}
 		}
 	}
@@ -202,6 +211,6 @@ public class IDOneSignal {
 
 extension String {
 	
-	var isTrimmedAndEmpty: Bool { return self.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+	fileprivate var isTrimmedAndEmpty: Bool { return self.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 	
 }
