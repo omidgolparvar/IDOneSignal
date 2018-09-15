@@ -146,10 +146,10 @@ public class IDOneSignal {
 		
 		fileprivate func getURL() -> URL {
 			switch self {
-			case .addDevice(_, _)	: return URL(string: IDOneSignal.Routes.addDevice)!
+			case .addDevice(_, _)	: return URL(string: IDOneSignal.BaseURL + IDOneSignal.Routes.addDevice)!
 			case .subscribe,
 				 .unsubscribe,
-				 .setTags(_)		: return URL(string: IDOneSignal.Routes.editDevice)!
+				 .setTags(_)		: return URL(string: IDOneSignal.BaseURL + IDOneSignal.Routes.editDevice + IDOneSignal.PlayerID!)!
 			}
 		}
 		
