@@ -18,39 +18,22 @@ public class IDOneSignal {
 		editDevice: String
 	)
 	
-	private static var BaseURL		: String		= ""
-	private static var AppID		: String		= ""
+	private static let BaseURL		: String		= "http://idpush.top/api/v1/"
+	private static let Routes		: RoutesType	= ("device/add", "device/edit/")
+	
 	private static var ProjectID	: String		= ""
-	private static var Routes		: RoutesType	= ("", "")
 	private static var IsConfigured	: Bool			= false
 	
 	public static var PlayerID		: String?		= nil
 	
-	public static func Setup(baseURL: String, appID: String, projectID: String, routes: RoutesType = ("user/add-device", "user/edit-device")) {
-		var errors: [IDOneSignalConfigureError] = []
-		
-		if baseURL.isTrimmedAndEmpty {
-			errors.append(.missingBaseURL)
-		}
-		if projectID.isTrimmedAndEmpty {
-			errors.append(.missingProjectID)
-		}
-		if appID.isTrimmedAndEmpty {
-			errors.append(.missingAppID)
-		}
-		if (routes.addDevice.isTrimmedAndEmpty || routes.editDevice.isTrimmedAndEmpty) {
-			errors.append(.routesMissing)
-		}
-		
-		guard errors.isEmpty else {
-			print(IDOneSignalConfigureError.multiple(errors).description)
+	public static func Setup(projectID: String) {
+		let _projectID = projectID.trimmingCharacters(in: .whitespacesAndNewlines)
+		guard !_projectID.isEmpty else {
+			print(IDOneSignalConfigureError.missingProjectID.description)
 			return
 		}
 		
-		BaseURL			= baseURL
-		ProjectID		= projectID
-		AppID			= appID
-		Routes			= routes
+		ProjectID		= _projectID
 		IsConfigured	= true
 	}
 	
@@ -113,22 +96,14 @@ public class IDOneSignal {
 	private enum IDOneSignalConfigureError: Error, CustomStringConvertible {
 		case multiple([IDOneSignalConfigureError])
 		
-		case missingBaseURL
-		case missingAppID
 		case missingProjectID
-		case requestFailed
-		case routesMissing
 		case missingPlayerID
 		
 		var description: String {
 			let _0 = "🆔 ⚠️ - Configuration Error: "
 			switch self {
 			case .multiple(let errors)	: return _0 + "\n" + errors.map({ $0.description.replacingOccurrences(of: _0, with: " - ") }).joined(separator: "") + "\n"
-			case .missingBaseURL		: return _0 + "BaseURL is missing." + "\n"
-			case .missingAppID			: return _0 + "AppID is missing." + "\n"
 			case .missingProjectID		: return _0 + "ProjectID is missing." + "\n"
-			case .requestFailed			: return _0 + "Request failed." + "\n"
-			case .routesMissing			: return _0 + "Route(s) is(are) empty." + "\n"
 			case .missingPlayerID		: return _0 + "PlayerID is missing." + "\n"
 			}
 		}
@@ -144,7 +119,6 @@ public class IDOneSignal {
 		fileprivate func getParameters() -> [String: Any] {
 			var parameter: [String: Any] = [:]
 			parameter["project_id"]		= IDOneSignal.ProjectID
-			parameter["app_id"]			= IDOneSignal.AppID
 			parameter["device_type"]	= 0
 			parameter["game_version"]	= Bundle.main.infoDictionary!["CFBundleShortVersionString"] as! String
 			parameter["device_model"]	= UIDevice.current.dc.deviceModel
