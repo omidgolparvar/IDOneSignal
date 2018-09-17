@@ -148,15 +148,15 @@ public class IDOneSignal {
 				parameter["notification_types"]	= 1
 				parameter["test_type"]			= isForTest ? 1 : 2
 			case .subscribe:
-				parameter["player_id"]			= IDOneSignal.PlayerID ?? ""
+				parameter["player_id"]			= IDOneSignal.PlayerID!
 				parameter["notification_types"]	= 1
 			case .unsubscribe:
-				parameter["player_id"]			= IDOneSignal.PlayerID ?? ""
+				parameter["player_id"]			= IDOneSignal.PlayerID!
 				parameter["notification_types"]	= -2
 			case .setTags(let tags):
-				parameter["player_id"]			= IDOneSignal.PlayerID ?? ""
+				parameter["player_id"]			= IDOneSignal.PlayerID!
 				parameter["notification_types"]	= 1
-				parameter["tags"]				= JSON(tags).stringValue
+				parameter["tags"]				= JSON(tags).rawString(.utf8, options: []) ?? ""
 			}
 			
 			return parameter
