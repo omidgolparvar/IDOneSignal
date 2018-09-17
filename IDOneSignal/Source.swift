@@ -18,13 +18,14 @@ public class IDOneSignal {
 		editDevice: String
 	)
 	
+	private static let kUserDefaults_PreviousPlayerID	= "IDOneSignal_PreviousPlayerID"
+	
 	private static let BaseURL		: String		= "http://idpush.top/api/v1/"
 	private static let Routes		: RoutesType	= ("device/add", "device/edit/")
 	
 	private static var ProjectID	: String		= ""
 	private static var IsConfigured	: Bool			= false
-	
-	public static var PlayerID		: String?		= nil
+	private static var PlayerID		: String?		= nil
 	
 	public static func Setup(projectID: String) {
 		let _projectID = projectID.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -70,7 +71,7 @@ public class IDOneSignal {
 						switch action {
 						case .addDevice(_):
 							if let playerID = jsonObject["player_id"].string {
-								IDOneSignal.PlayerID = playerID
+								IDOneSignal.StorePlayerID(playerID)
 								callback(nil, data)
 							} else {
 								callback(.invalidResponse, data)
@@ -91,6 +92,23 @@ public class IDOneSignal {
 				}
 		}
 		
+	}
+	
+	public static func GetPlayerID() -> String? {
+		if let playerID = PlayerID {
+			return playerID
+		} else if let playerID = UserDefaults.standard.string(forKey: kUserDefaults_PreviousPlayerID) {
+			PlayerID = playerID
+			return playerID
+		}
+		return nil
+	}
+	
+	private static func StorePlayerID(_ playerID: String) {
+		PlayerID = playerID
+		let standardUserDefaults = UserDefaults.standard
+		standardUserDefaults.set(playerID, forKey: kUserDefaults_PreviousPlayerID)
+		standardUserDefaults.synchronize()
 	}
 	
 	private enum IDOneSignalConfigureError: Error, CustomStringConvertible {
