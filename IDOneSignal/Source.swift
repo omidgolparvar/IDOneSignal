@@ -14,8 +14,8 @@ import UIDeviceComplete
 public class IDOneSignal {
 	
 	public typealias RoutesType		= (
-		addDevice: String,
-		editDevice: String
+		addDevice	: String,
+		editDevice	: String
 	)
 	
 	private static let kUserDefaults_PreviousPlayerID	= "IDOneSignal_PreviousPlayerID"
@@ -68,6 +68,7 @@ public class IDOneSignal {
 					
 					if	let httpStatusCode = response.response?.statusCode, httpStatusCode == 200,
 						let statusValue = jsonObject["status"].int, statusValue == 1 {
+						
 						switch action {
 						case .addDevice(_):
 							if let playerID = jsonObject["player_id"].string {
@@ -129,10 +130,11 @@ public class IDOneSignal {
 	}
 	
 	public enum IDOneSignalAction {
-		case addDevice(token: String, isForTest: Bool)
+		case addDevice(token: String)
 		case subscribe
 		case unsubscribe
 		case setTags(tags: [String: Any])
+		case editDevice(parameters: [String: Any])
 		
 		fileprivate func getParameters() -> [String: Any] {
 			var parameter: [String: Any] = [:]
@@ -143,9 +145,17 @@ public class IDOneSignal {
 			parameter["device_os"]		= UIDevice.current.systemVersion
 			
 			switch self {
-			case .addDevice(let token, let isForTest):
+			case .addDevice(let token):
 				parameter["identifier"]			= token
 				parameter["notification_types"]	= 1
+				
+				var isForTest: Bool = true
+				#if DEBUG
+					isForTest = true
+				#else
+					isForTest = false
+				#endif
+				
 				parameter["test_type"]			= isForTest ? 1 : 2
 			case .subscribe:
 				parameter["player_id"]			= IDOneSignal.PlayerID!
@@ -157,6 +167,9 @@ public class IDOneSignal {
 				parameter["player_id"]			= IDOneSignal.PlayerID!
 				parameter["notification_types"]	= 1
 				parameter["tags"]				= JSON(tags).rawString(.utf8, options: []) ?? ""
+			case .editDevice(let parameters):
+				parameter["player_id"]			= IDOneSignal.PlayerID!
+				parameters.forEach({ parameter[$0.key] = $0.value })
 			}
 			
 			return parameter
@@ -164,19 +177,21 @@ public class IDOneSignal {
 		
 		fileprivate func getURL() -> URL {
 			switch self {
-			case .addDevice(_, _)	: return URL(string: IDOneSignal.BaseURL + IDOneSignal.Routes.addDevice)!
+			case .addDevice(_)	: return URL(string: IDOneSignal.BaseURL + IDOneSignal.Routes.addDevice)!
 			case .subscribe,
 				 .unsubscribe,
-				 .setTags(_)		: return URL(string: IDOneSignal.BaseURL + IDOneSignal.Routes.editDevice + IDOneSignal.PlayerID!)!
+				 .setTags(_),
+				 .editDevice(_)	: return URL(string: IDOneSignal.BaseURL + IDOneSignal.Routes.editDevice + IDOneSignal.PlayerID!)!
 			}
 		}
 		
 		fileprivate func validateBeforePerform() throws {
 			switch self {
-			case .addDevice(let token, _)	: guard !token.isTrimmedAndEmpty else { throw IDOneSignalActionError.missingDeviceToken }
+			case .addDevice(let token)	: guard !token.isTrimmedAndEmpty else { throw IDOneSignalActionError.missingDeviceToken }
 			case .subscribe,
 				 .unsubscribe,
-				 .setTags(_)				: guard IDOneSignal.PlayerID != nil else { throw IDOneSignalActionError.missingPlayerID }
+				 .setTags(_),
+				 .editDevice(_)			: guard IDOneSignal.PlayerID != nil else { throw IDOneSignalActionError.missingPlayerID }
 			}
 		}
 	}
